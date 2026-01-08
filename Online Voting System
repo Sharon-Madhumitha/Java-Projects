@@ -1,0 +1,202 @@
+Project Structure
+voting-system/
+ ├── controller
+ ├── entity
+ ├── repository
+ ├── service
+ ├── security
+ └── VotingApplication.java
+
+Entities (Database Models)
+User.java
+@Entity
+public class User {
+
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    @Column(unique = true)
+    private String username;
+
+    private String password;
+    private String role; // USER or ADMIN
+    private boolean hasVoted;
+
+    // getters & setters
+}
+
+Party.java
+@Entity
+public class Party {
+
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    private String name;
+
+    // getters & setters
+}
+
+Vote.java (Anonymous)
+@Entity
+public class Vote {
+
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    private Long partyId; // no userId stored → anonymity
+}
+
+2️⃣ Repositories
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByUsername(String username);
+}
+
+public interface PartyRepository extends JpaRepository<Party, Long> {
+}
+
+public interface VoteRepository extends JpaRepository<Vote, Long> {
+    long countByPartyId(Long partyId);
+}
+
+3️⃣ Security Configuration
+SecurityConfig.java
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.csrf().disable()
+            .authorizeHttpRequests()
+            .requestMatchers("/admin/**").hasRole("ADMIN")
+            .requestMatchers("/vote/**").hasRole("USER")
+            .anyRequest().permitAll()
+            .and()
+            .httpBasic();
+
+        return http.build();
+    }
+
+    @Bean
+    PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
+
+4️⃣ Services
+UserService.java
+@Service
+public class UserService {
+
+    @Autowired
+    UserRepository userRepo;
+
+    @Autowired
+    PasswordEncoder encoder;
+
+    public User register(String username, String password) {
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(encoder.encode(password));
+        user.setRole("ROLE_USER");
+        user.setHasVoted(false);
+        return userRepo.save(user);
+    }
+}
+
+VotingService.java
+@Service
+public class VotingService {
+
+    @Autowired
+    VoteRepository voteRepo;
+
+    @Autowired
+    UserRepository userRepo;
+
+    public void castVote(Long partyId, String username) {
+        User user = userRepo.findByUsername(username).orElseThrow();
+
+        if (user.isHasVoted())
+            throw new RuntimeException("User already voted");
+
+        Vote vote = new Vote();
+        vote.setPartyId(partyId);
+        voteRepo.save(vote);
+
+        user.setHasVoted(true);
+        userRepo.save(user);
+    }
+}
+
+5️⃣ Controllers (REST APIs)
+AuthController.java
+@RestController
+@RequestMapping("/auth")
+public class AuthController {
+
+    @Autowired
+    UserService userService;
+
+    @PostMapping("/register")
+    public User register(@RequestParam String username,
+                         @RequestParam String password) {
+        return userService.register(username, password);
+    }
+}
+
+VotingController.java
+@RestController
+@RequestMapping("/vote")
+public class VotingController {
+
+    @Autowired
+    VotingService votingService;
+
+    @PostMapping("/{partyId}")
+    public String vote(@PathVariable Long partyId,
+                       Authentication auth) {
+        votingService.castVote(partyId, auth.getName());
+        return "Vote recorded successfully";
+    }
+}
+
+AdminController.java
+@RestController
+@RequestMapping("/admin")
+public class AdminController {
+
+    @Autowired
+    PartyRepository partyRepo;
+
+    @Autowired
+    VoteRepository voteRepo;
+
+    @PostMapping("/party")
+    public Party addParty(@RequestParam String name) {
+        Party p = new Party();
+        p.setName(name);
+        return partyRepo.save(p);
+    }
+
+    @GetMapping("/results")
+    public Map<String, Long> results() {
+        Map<String, Long> result = new HashMap<>();
+        for (Party p : partyRepo.findAll()) {
+            result.put(p.getName(),
+                       voteRepo.countByPartyId(p.getId()));
+        }
+        return result;
+    }
+}
+
+6️⃣ Application Runner
+@SpringBootApplication
+public class VotingApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(VotingApplication.class, args);
+    }
+}
