@@ -1,4 +1,4 @@
-# ☕ Java Projects Repository
+#  Java Projects Repository
 
 Welcome to my **Java Projects Repository**! This repository contains a collection of Java projects developed to strengthen my understanding of Core Java, Object-Oriented Programming (OOP), database connectivity, and software development concepts.
 
@@ -6,7 +6,7 @@ Each project focuses on solving real-world problems while improving coding pract
 
 ---
 
-## 📌 About
+##  About
 
 This repository includes Java applications ranging from beginner to intermediate level. The projects demonstrate the use of Java programming concepts, database integration, and clean coding practices.
 
@@ -14,7 +14,7 @@ Whether you're learning Java or looking for project ideas, this repository can s
 
 ---
 
-## 🚀 Technologies Used
+##  Technologies Used
 
 * Java
 * Object-Oriented Programming (OOP)
@@ -29,7 +29,7 @@ Whether you're learning Java or looking for project ideas, this repository can s
 
 ---
 
-## 📂 Projects Included
+##  Projects Included
 
 * Crime Records Management System
 * Train Ticket Booking System
@@ -46,7 +46,7 @@ Whether you're learning Java or looking for project ideas, this repository can s
 
 ---
 
-## ✨ Features
+##  Features
 
 * Console-based Java applications
 * Modular and reusable code
@@ -59,7 +59,7 @@ Whether you're learning Java or looking for project ideas, this repository can s
 
 ---
 
-## 📁 Repository Structure
+##  Repository Structure
 
 ```
 Java-Projects/
@@ -77,7 +77,7 @@ Java-Projects/
 
 ---
 
-## ⚙️ Getting Started
+##  Getting Started
 
 1. Clone this repository.
 
